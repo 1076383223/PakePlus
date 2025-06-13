@@ -1,22 +1,420 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子工具箱</title>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .tool {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            color: #4b5563;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        input[type="number"],
+        input[type="text"],
+        select {
+            border: 1px solid #d1d5db;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 100%;
+        }
+        button {
+            background-color: #2563eb;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            border: none;
+            margin-top: 1rem;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .result {
+            margin-top: 1.5rem;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 0.25rem;
+        }
+        .warning {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>电子工具箱</h1>
+        
+        <!-- 分压器计算器 -->
+        <div id="voltage-divider" class="tool">
+            <h2>分压器计算器</h2>
+            <p>该工具用于计算电阻分压器电路的输出电压、电阻功耗以及电流。</p>
+            
+            <div class="mb-4">
+                <label for="voltageInput">电压输入 (V1)：</label>
+                <div class="flex">
+                    <input type="number" id="voltageInput" placeholder="请输入电源电压">
+                    <span class="bg-gray-200 px-2 py-2 rounded-r">V</span>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="resistor1">第1个电阻值 (R1)：</label>
+                <div class="flex">
+                    <input type="number" id="resistor1" placeholder="请输入第一个电阻阻值">
+                    <select id="resistor1Unit">
+                        <option value="1">Ω</option>
+                        <option value="1000">kΩ</option>
+                        <option value="1000000">MΩ</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label for="resistor2">第2个电阻值 (R2)：</label>
+                <div class="flex">
+                    <input type="number" id="resistor2" placeholder="请输入第二个电阻阻值">
+                    <select id="resistor2Unit">
+                        <option value="1">Ω</option>
+                        <option value="1000">kΩ</option>
+                        <option value="1000000">MΩ</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="calculateVoltageDivider">计算</button>
+            
+            <div class="result">
+                <p>电压输出 (Vout)：<span id="outputVoltage"></span> V</p>
+                <p>R1 功耗：<span id="powerR1"></span> <span id="powerR1Unit">W</span></p>
+                <p>R2 功耗：<span id="powerR2"></span> <span id="powerR2Unit">W</span></p>
+                <p>电路电流：<span id="current"></span> A</p>
+            </div>
+        </div>
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
+        <!-- 电阻功耗转换 -->
+        <div id="power-converter" class="tool">
+            <h2>电阻功耗转换</h2>
+            <p>将分母值转换为对应的mW功率值。</p>
+            
+            <label for="input-power">输入分母（如 8，将按 1/8 转换）：</label>
+            <input type="text" id="input-power" class="mb-4">
+            <button onclick="convertPower()">转换</button>
+            <div id="result" class="result"></div>
+        </div>
 
-            <form class="row" id="greet-form">
-                <input id="greet-input" placeholder="Enter a name..." />
-                <button type="submit">Greet</button>
-            </form>
-            <p id="greet-msg"></p>
-        </main>
-    </body>
+        <!-- DC-DC反馈电阻推荐器 -->
+        <div id="dc-dc-calculator" class="tool">
+            <h2>DC-DC 分压电阻计算器</h2>
+            <p>为DC-DC转换器推荐精密分压电阻。</p>
+            
+            <div class="mb-4">
+                <label for="vout">输出电压 Vout (V): </label>
+                <input type="number" id="vout" step="0.1" value="12.5" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="vref">参考电压 Vref (V): </label>
+                <input type="number" id="vref" step="0.1" value="1.2" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="eseries">标准电阻系列: </label>
+                <select id="eseries">
+                    <option value="E6">E6 (±20%)</option>
+                    <option value="E12">E12 (±10%)</option>
+                    <option value="E24" selected>E24 (±5%)</option>
+                    <option value="E96">E96 (±1%)</option>
+                </select>
+            </div>
+            
+            <button onclick="calculateDCDC()">计算</button>
+            <div id="dc-dc-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 分压器计算器逻辑
+        const calculateButton = document.getElementById('calculateVoltageDivider');
+        const voltageInput = document.getElementById('voltageInput');
+        const resistor1 = document.getElementById('resistor1');
+        const resistor2 = document.getElementById('resistor2');
+        const resistor1Unit = document.getElementById('resistor1Unit');
+        const resistor2Unit = document.getElementById('resistor2Unit');
+        const outputVoltage = document.getElementById('outputVoltage');
+        const powerR1 = document.getElementById('powerR1');
+        const powerR1Unit = document.getElementById('powerR1Unit');
+        const powerR2 = document.getElementById('powerR2');
+        const powerR2Unit = document.getElementById('powerR2Unit');
+        const current = document.getElementById('current');
+
+        calculateButton.addEventListener('click', function () {
+            const v1 = parseFloat(voltageInput.value);
+            const r1Value = parseFloat(resistor1.value);
+            const r2Value = parseFloat(resistor2.value);
+            const r1Unit = parseFloat(resistor1Unit.value);
+            const r2Unit = parseFloat(resistor2Unit.value);
+
+            const r1 = r1Value * r1Unit;
+            const r2 = r2Value * r2Unit;
+
+            if (!isNaN(v1) && !isNaN(r1) && !isNaN(r2)) {
+                const vout = (v1 * r2) / (r1 + r2);
+                outputVoltage.textContent = vout.toFixed(2);
+
+                const i = v1 / (r1 + r2);
+                current.textContent = i.toFixed(6);
+
+                const p1 = i * i * r1;
+                const p2 = i * i * r2;
+
+                if (p1 < 1) {
+                    powerR1.textContent = (p1 * 1000).toFixed(2);
+                    powerR1Unit.textContent = 'mW';
+                } else {
+                    powerR1.textContent = p1.toFixed(2);
+                    powerR1Unit.textContent = 'W';
+                }
+
+                if (p2 < 1) {
+                    powerR2.textContent = (p2 * 1000).toFixed(2);
+                    powerR2Unit.textContent = 'mW';
+                } else {
+                    powerR2.textContent = p2.toFixed(2);
+                    powerR2Unit.textContent = 'W';
+                }
+            } else {
+                outputVoltage.textContent = '输入无效，请输入有效的数字。';
+                powerR1.textContent = '';
+                powerR2.textContent = '';
+                current.textContent = '';
+                powerR1Unit.textContent = 'W';
+                powerR2Unit.textContent = 'W';
+            }
+        });
+
+        // 电阻功耗转换逻辑
+        function convertPower() {
+            const input = document.getElementById('input-power').value;
+            const denominator = parseFloat(input);
+            if (!isNaN(denominator) && denominator !== 0) {
+                const powerInWatts = 1 / denominator;
+                const powerInMilliWatts = powerInWatts * 1000;
+                document.getElementById('result').textContent = `转换结果：${powerInMilliWatts} mW`;
+            } else {
+                document.getElementById('result').textContent = '输入格式有误，请输入一个非零数字。';
+            }
+        }
+
+        // DC-DC分压电阻计算器逻辑
+        // 标准电阻系列定义
+        const E_SERIES = [
+            {
+                value: 'E6',
+                series: [10, 15, 22, 33, 47, 68],
+                tolerance: '±20%'
+            },
+            {
+                value: 'E12',
+                series: [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82],
+                tolerance: '±10%'
+            },
+            {
+                value: 'E24',
+                series: [10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39, 43, 47, 51, 56, 62, 68, 75, 82, 91],
+                tolerance: '±5%'
+            },
+            {
+                value: 'E96',
+                series: [100, 102, 105, 107, 110, 113, 115, 118, 121, 124, 127, 130,
+                         133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169, 174,
+                         178, 182, 187, 191, 196, 200, 205, 210, 215, 221, 226, 232,
+                         237, 243, 249, 255, 261, 267, 274, 280, 287, 294, 301, 309,
+                         316, 324, 332, 340, 348, 357, 365, 374, 383, 392, 402, 412,
+                         422, 432, 442, 453, 464, 470, 475, 487, 499, 511, 523, 536,
+                         549, 562, 576, 590, 604, 619, 634, 649, 665, 681, 698, 715,
+                         732, 750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976],
+                tolerance: '±1%'
+            }
+        ];
+
+        // 电阻生成器
+        function generateResistors(eSeries) {
+            const series = E_SERIES.find(s => s.value === eSeries).series;
+            const resistors = [];
+            const isE96 = eSeries === 'E96';
+            const minExp = isE96 ? -2 : -1;
+            const maxExp = isE96 ? 5 : 6;
+
+            for (let exp = minExp; exp <= maxExp; exp++) {
+                const multiplier = Math.pow(10, exp);
+                for (let i = 0; i < series.length; i++) {
+                    const base = isE96 ? series[i]/100 : series[i]/10;
+                    const value = base * multiplier;
+                    if (value >= 1 && value <= 10e6) {
+                        resistors.push(value);
+                    }
+                }
+            }
+            return [...new Set(resistors)].sort((a, b) => a - b);
+        }
+
+        // 改进版电阻匹配算法
+        function findClosestResistor(target, resistors) {
+            if (resistors.length === 0) return null;
+            
+            let low = 0, high = resistors.length - 1;
+            while (low < high) {
+                const mid = Math.floor((low + high) / 2);
+                if (resistors[mid] < target) {
+                    low = mid + 1;
+                } else {
+                    high = mid;
+                }
+            }
+            
+            // 比较相邻的三个候选值
+            const candidates = [];
+            if (low > 0) candidates.push(resistors[low - 1]);
+            candidates.push(resistors[low]);
+            if (low < resistors.length - 1) candidates.push(resistors[low + 1]);
+            
+            return candidates.reduce((a, b) => 
+                Math.abs(a - target) < Math.abs(b - target) ? a : b
+            );
+        }
+
+        // DC-DC分压电阻计算核心逻辑
+        function calculateDCDC() {
+            // 获取输入值
+            const voutElem = document.getElementById('vout');
+            const vrefElem = document.getElementById('vref');
+            const vout = parseFloat(voutElem.value);
+            const vref = parseFloat(vrefElem.value);
+            
+            // 输入验证
+            if (isNaN(vout) || isNaN(vref)) {
+                alert("请输入有效的电压值");
+                return;
+            }
+            if (vout <= vref) {
+                alert("Vout必须大于Vref！");
+                return;
+            }
+
+            // 生成电阻列表
+            const eSeries = document.getElementById('eseries').value;
+            const resistors = generateResistors(eSeries);
+            if (resistors.length === 0) {
+                document.getElementById('dc-dc-result').innerHTML = 
+                    "<p class='warning'>未找到可用的电阻值</p>";
+                return;
+            }
+
+            // 计算理论比例
+            const ratio = vout / vref - 1;
+            const candidates = [];
+
+            // 遍历所有Rb值
+            for (let i = 0; i < resistors.length; i++) {
+                const rb = resistors[i];
+                const raTarget = ratio * rb;
+                
+                // Ra范围过滤（100kΩ-1MΩ）
+                if (raTarget < 1e5 || raTarget > 1e6) continue;
+
+                // 寻找最接近的Ra
+                const ra = findClosestResistor(raTarget, resistors);
+                if (!ra) continue;
+
+                // 计算实际输出电压
+                const actualVout = vref * (1 + ra / rb);
+                const error = Math.abs((actualVout - vout) / vout * 100);
+
+                candidates.push({
+                    ra: ra,
+                    rb: rb,
+                    actualVout: actualVout,
+                    error: error
+                });
+            }
+
+            // 结果排序（误差优先）
+            candidates.sort((a, b) => a.error - b.error);
+            displayDCDCResults(candidates.slice(0, 5));
+        }
+
+        // 结果显示优化
+        function displayDCDCResults(results) {
+            const resultDiv = document.getElementById('dc-dc-result');
+            if (results.length === 0) {
+                resultDiv.innerHTML = `<p class="warning">未找到符合要求的电阻组合</p>`;
+                return;
+            }
+
+            let html = `<h3>推荐组合 (误差越小越好):</h3>`;
+            results.forEach((res, index) => {
+                html += `
+                    <div style="margin: 10px 0; padding: 5px; border-bottom: 1px solid #ddd;">
+                        <b>组合${index + 1}:</b><br>
+                        Ra = ${formatResistor(res.ra)}, 
+                        Rb = ${formatResistor(res.rb)}<br>
+                        → 实际电压: ${res.actualVout.toFixed(2)}V 
+                        （误差: ${res.error.toFixed(2)}%）
+                    </div>
+                `;
+            });
+            resultDiv.innerHTML = html;
+        }
+
+        // 电阻值格式化显示
+        function formatResistor(value) {
+            if (value >= 1e6) return `${(value/1e6).toFixed(2)}MΩ`;
+            if (value >= 1e3) return `${(value/1e3).toFixed(1)}kΩ`;
+            return `${value.toFixed(0)}Ω`;
+        }
+    </script>
+</body>
 </html>
